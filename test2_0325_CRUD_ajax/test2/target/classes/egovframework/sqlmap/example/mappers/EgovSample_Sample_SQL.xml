@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.sample.service.impl.SampleMapper">
+
+	<!-- <resultMap id="sample" type="egovframework.example.sample.service.BbsListVO">
+		<result property="bbs_seq" column="bbs_seq"/>
+		<result property="title" column="title"/>
+		<result property="name" column="name"/>
+		<result property="content" column="content"/>
+		<result property="passwd" column="passwd"/>
+		<result property="open_yn" column="open_yn"/>
+		<result property="notice_yn" column="notice_yn"/>
+		<result property="reg_dt" column="reg_dt"/>
+		<result property="mod_dt" column="mod_dt"/>
+		<result property="view_count" column="view_count"/>
+	</resultMap> -->
+
+	<insert id="insertSample" parameterType="BbsListVO">
+
+			INSERT INTO TCOM_BBS
+				( BBS_SEQ
+				  , TITLE
+				  , NAME
+				  , CONTENT
+				  , PASSWD
+				  , OPEN_YN
+				  , NOTICE_YN
+				  , REG_DT
+				  , MOD_DT
+				  , VIEW_COUNT )
+			VALUES ( #{bbs_seq}
+				  , #{title}
+				  , #{name}
+				  , #{content}
+				  , #{passwd}
+				  , #{open_yn}
+				  , #{notice_yn}
+				  , #{reg_dt}
+				  , #{mod_dt}
+				  , #{view_count} )
+
+	</insert>
+
+	<update id="updateSample">
+
+			UPDATE TCOM_BBS
+			SET ID=#{id}
+				, NAME=#{name}
+				, CONTENT=#{description}
+				, USE_YN=#{useYn}
+				  WHERE ID=#{id}
+
+	</update>
+
+	<delete id="deleteSample">
+
+			DELETE FROM TCOM_BBS
+			WHERE ID=#{id}
+
+	</delete>
+<!-- 
+	<select id="selectSample" resultMap="sample">
+
+			SELECT
+				ID, NAME, DESCRIPTION, USE_YN, REG_USER
+			FROM TCOM_BBS
+			WHERE ID=#{id}
+
+	</select>
+ -->
+	<select id="selectSampleList" parameterType="searchVO" resultType="egovMap">
+
+			SELECT
+				ID, NAME, DESCRIPTION, USE_YN, REG_USER
+			FROM TCOM_BBS
+			WHERE 1=1
+			<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 0">
+						AND	ID LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 1">
+						AND	NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+			</if>
+			ORDER BY ID ASC
+			LIMIT #{recordCountPerPage} OFFSET #{firstIndex}
+	</select>
+
+	<select id="selectSampleListTotCnt" parameterType="searchVO" resultType="int">
+
+			SELECT COUNT(*) totcnt
+			FROM TCOM_BBS
+			WHERE 1=1
+			<if test="searchKeyword != null and searchKeyword != ''">
+		        <choose>
+		            <when test="searchCondition == 0">
+						AND ID LIKE '%' || #{searchKeyword} || '%'
+					</when>
+		            <when test="searchCondition == 1">
+						AND	NAME LIKE '%' || #{searchKeyword} || '%'
+					</when>
+				</choose>
+			</if>
+	</select>
+	
+	<!-- 조회수 업데이트 -->
+	<update id="viewCount">
+		UPDATE 
+				TCOM_BBS
+		SET
+			VIEW_COUNT = VIEW_COUNT +1
+		WHERE
+			BBS_SEQ =#{bbs_seq}
+	</update>
+
+</mapper>

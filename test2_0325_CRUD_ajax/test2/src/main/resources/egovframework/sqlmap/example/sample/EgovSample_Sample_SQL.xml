@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="SampleSqlMap">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.wini.edu.service.SampleDefaultVO"/>
+
+	<resultMap id="Detail" class="egovframework.wini.edu.service.BbsDetailVO">
+		<result property="bbs_seq" column="bbs_seq"/>
+		<result property="title" column="title"/>
+		<result property="name" column="name"/>
+		<result property="content" column="content"/>
+		<result property="passwd" column="passwd"/>
+<!-- 		<result property="open_yn" column="open_yn"/> -->
+<!-- 		<result property="notice_yn" column="notice_yn"/> -->
+<!-- 		<result property="reg_dt" column="reg_dt"/> -->
+<!-- 		<result property="mod_dt" column="mod_dt"/> -->
+		<result property="view_count" column="view_count"/>
+	</resultMap>
+
+	<insert id="BbsWriteDAO.insertSample">
+		<![CDATA[
+			INSERT INTO TCOM_BBS
+				( BBS_SEQ
+				  , TITLE
+				  , NAME
+				  , CONTENT
+				  , PASSWD
+				  , OPEN_YN
+				  , NOTICE_YN
+				  , REG_DT
+				  , MOD_DT
+				  , VIEW_COUNT )
+			VALUES ( (SELECT NVL(MAX(BBS_SEQ), 0) + 1 FROM TCOM_BBS)
+				  , #title#
+				  , #name#
+				  , #content#
+				  , #passwd#
+				  , #open_yn#
+				  , #notice_yn#
+				  , sysdate
+				  , sysdate
+				  , #view_count# )
+		]]>
+	</insert>
+	
+	<update id="BbsDetailDAO.updateSample">
+		<![CDATA[
+			UPDATE 
+					TCOM_BBS
+			SET
+					BBS_SEQ=#bbs_seq# 
+					,TITLE=#title#
+					, NAME=#name#
+					, CONTENT=#content#
+					, NOTICE_YN=#notice_yn#
+					, OPEN_YN=#open_yn#
+					, MOD_DT=sysdate
+					, PASSWD=#passwd#
+			WHERE 
+					BBS_SEQ=#bbs_seq#
+		]]>
+	</update>
+	
+	<delete id="BbsDetailDAO.deleteSample">
+		<![CDATA[
+			DELETE FROM TCOM_BBS 
+			WHERE BBS_SEQ=#bbs_seq#
+		]]>
+	</delete>
+    
+    <select id="BbsDetailDAO.selectSample" resultMap="Detail">
+        <![CDATA[
+            SELECT
+                BBS_SEQ, TITLE, NAME, REG_DT, CONTENT, VIEW_COUNT, PASSWD 
+            FROM TCOM_BBS 
+            WHERE BBS_SEQ=#bbs_seq#
+        ]]>
+    </select>
+	
+	<select id="BbsListDAO.selectSampleList" parameterClass="searchVO" resultClass="egovMap">
+			select a.BBS_SEQ , a.TITLE , a.NAME, a.REG_DT, a.VIEW_COUNT,NOTICE_YN
+              from
+              (
+                           select rownum rnum, s.*
+                           from
+                           (
+                                  SELECT BBS_SEQ, TITLE, NAME, REG_DT, VIEW_COUNT,NOTICE_YN
+                                  FROM TCOM_BBS
+                                  WHERE 1=1
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="0">
+                                         TITLE LIKE '%' || #searchKeyword# || '%'
+                                         OR NAME LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="1">
+                                         TITLE LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="2">
+                                         NAME LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  ORDER BY BBS_SEQ ASC
+                           ) s
+              ) a
+			<!-- <![CDATA[
+              where
+                     rownum <= #recordCountPerPage#
+                     and rnum > #firstIndex#    
+              ]]> -->
+              ORDER BY a.NOTICE_YN desc,a.BBS_SEQ asc
+       </select>
+	
+	<select id="BbsListDAO.selectSampleListTotCnt" parameterClass="searchVO" resultClass="int">
+
+			SELECT COUNT(*) totcnt
+			FROM TCOM_BBS
+			WHERE 1=1
+			 <isEqual prepend="AND" property="searchCondition" compareValue="0">
+                 TITLE LIKE '%' || #searchKeyword# || '%'
+                 OR NAME LIKE '%' || #searchKeyword# || '%'
+             </isEqual>
+             <isEqual prepend="AND" property="searchCondition" compareValue="1">
+                  TITLE LIKE '%' || #searchKeyword# || '%'
+              </isEqual>
+              <isEqual prepend="AND" property="searchCondition" compareValue="2">
+                  NAME LIKE '%' || #searchKeyword# || '%'
+              </isEqual>
+	</select>
+
+</sqlMap>

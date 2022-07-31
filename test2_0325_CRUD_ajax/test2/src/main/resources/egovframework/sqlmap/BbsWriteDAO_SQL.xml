@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="SampleSqlMap">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.wini.edu.service.SampleDefaultVO"/>
+
+	<insert id="BbsWriteDAO.insertSample">
+		<![CDATA[
+			INSERT INTO TCOM_BBS
+				( BBS_SEQ
+				  , TITLE
+				  , NAME
+				  , CONTENT
+				  , PASSWD
+				  , OPEN_YN
+				  , NOTICE_YN
+				  , REG_DT
+				  , MOD_DT
+				  , VIEW_COUNT )
+			VALUES ( (SELECT NVL(MAX(BBS_SEQ), 0) + 1 FROM TCOM_BBS)
+				  , #title#
+				  , #name#
+				  , #content#
+				  , #passwd#
+				  , #open_yn#
+				  , #notice_yn#
+				  , sysdate
+				  , sysdate
+				  , #view_count# )
+		]]>
+	</insert>
+
+	<insert id="BbsWriteDAO.insertFile">
+		INSERT INTO TCOM_ATCH_FILE
+		(
+			bbs_seq
+			, atch_seq
+			, file_path
+			, file_nm
+			, org_file_nm
+			, reg_dt
+		)
+		VALUES
+		(
+			#bbs_seq#
+			,atch_seq.NEXTVAL
+			,#file_path#
+			,#file_nm#
+			,#org_file_nm#
+			,sysdate
+		)
+	</insert>
+	
+	<select id = "BbsWriteDAO.seqFind" resultClass="java.lang.Integer">
+		SELECT NVL(MAX(BBS_SEQ), 0) FROM TCOM_BBS
+	</select>
+	
+
+</sqlMap>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="SampleSqlMap">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.wini.edu.service.SampleDefaultVO"/>
+	
+	<select id="BbsListDAO.selectSampleList" parameterClass="searchVO" resultClass="egovMap">
+	SELECT BBS_SEQ, TITLE, NAME, REG_DT, VIEW_COUNT, NOTICE_YN, '*' topyn
+	FROM TCOM_BBS
+	WHERE NOTICE_YN ='Y'
+	UNION ALL
+	select a.BBS_SEQ , a.TITLE , a.NAME, a.REG_DT, a.VIEW_COUNT,NOTICE_YN, '' topyn
+              from
+              (
+                           select rownum AS rnum, s.*
+                           from
+                           (
+                                  SELECT BBS_SEQ, TITLE, NAME, REG_DT, VIEW_COUNT,NOTICE_YN
+                                  FROM TCOM_BBS
+                                  WHERE 1=1
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="0">
+                                         TITLE LIKE '%' || #searchKeyword# || '%'
+                                         OR NAME LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="1">
+                                         TITLE LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  <isEqual prepend="AND" property="searchCondition" compareValue="2">
+                                         NAME LIKE '%' || #searchKeyword# || '%'
+                                  </isEqual>
+                                  ORDER BY BBS_SEQ ASC
+                           ) s
+              ) a
+			 <![CDATA[
+              where
+                     rownum <= #recordCountPerPage#
+                     and rnum > #firstIndex#    
+              ]]>
+       </select>
+	
+	<select id="BbsListDAO.selectSampleListTotCnt" parameterClass="searchVO" resultClass="int">
+
+			SELECT COUNT(*) totcnt
+			FROM TCOM_BBS
+			WHERE 1=1
+			 <isEqual prepend="AND" property="searchCondition" compareValue="0">
+                 TITLE LIKE '%' || #searchKeyword# || '%'
+                 OR NAME LIKE '%' || #searchKeyword# || '%'
+             </isEqual>
+             <isEqual prepend="AND" property="searchCondition" compareValue="1">
+                  TITLE LIKE '%' || #searchKeyword# || '%'
+              </isEqual>
+              <isEqual prepend="AND" property="searchCondition" compareValue="2">
+                  NAME LIKE '%' || #searchKeyword# || '%'
+              </isEqual>
+	</select>
+
+</sqlMap>

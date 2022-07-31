@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" "http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="SampleSqlMap">
+
+	<typeAlias  alias="egovMap" type="egovframework.rte.psl.dataaccess.util.EgovMap"/>
+	<typeAlias  alias="searchVO" type="egovframework.wini.edu.service.SampleDefaultVO"/>
+
+	<resultMap id="Detail" class="egovframework.wini.edu.service.BbsDetailVO">
+		<result property="bbs_seq" column="bbs_seq"/>
+		<result property="title" column="title"/>
+		<result property="name" column="name"/>
+		<result property="content" column="content"/>
+		<result property="passwd" column="passwd"/>
+<!-- 		<result property="open_yn" column="open_yn"/> -->
+<!-- 		<result property="notice_yn" column="notice_yn"/> -->
+<!-- 		<result property="reg_dt" column="reg_dt"/> -->
+<!-- 		<result property="mod_dt" column="mod_dt"/> -->
+		<result property="view_count" column="view_count"/>
+		<result property="atch_seq" column="atch_seq"/>
+		<result property="file_path" column="file_path"/>
+		<result property="file_nm" column="file_nm"/>
+		<result property="org_file_nm" column="org_file_nm"/>
+	</resultMap>
+	
+	<resultMap id="FileDownMap" class="egovframework.wini.edu.service.BbsDetailVO">
+		<result property="bbs_seq" column="bbs_seq"/>
+		<result property="reg_dt" column="reg_dt"/>
+		<result property="atch_seq" column="atch_seq"/>
+		<result property="file_path" column="file_path"/>
+		<result property="file_nm" column="file_nm"/>
+		<result property="org_file_nm" column="org_file_nm"/>
+	</resultMap>
+
+	<update id="BbsDetailDAO.updateSample">
+		<![CDATA[
+			UPDATE 
+					TCOM_BBS
+			SET
+					BBS_SEQ=#bbs_seq# 
+					,TITLE=#title#
+					, NAME=#name#
+					, CONTENT=#content#
+					, NOTICE_YN=#notice_yn#
+					, OPEN_YN=#open_yn#
+					, MOD_DT=sysdate
+					, PASSWD=#passwd#
+			WHERE 
+					BBS_SEQ=#bbs_seq#
+		]]>
+	</update>
+	
+	<delete id="BbsDetailDAO.deleteSample">
+		<![CDATA[
+			DELETE FROM TCOM_BBS 
+			WHERE BBS_SEQ=#bbs_seq#
+		]]>
+	</delete>
+    
+    <select id="BbsDetailDAO.selectSample" resultMap="Detail">
+        <![CDATA[
+            SELECT
+                ta.BBS_SEQ
+                , ta.TITLE
+                , ta.NAME
+                , ta.REG_DT
+                , ta.CONTENT
+                , ta.VIEW_COUNT
+                , ta.PASSWD 
+                , tb.atch_seq
+                , tb.file_path
+                , tb.file_nm
+                , tb.org_file_nm
+            FROM TCOM_BBS ta LEFT OUTER JOIN
+            	TCOM_ATCH_FILE tb 
+            ON
+            	ta.bbs_seq = tb.bbs_seq
+            WHERE 
+            	ta.bbs_seq=#bbs_seq#
+            AND
+             	rownum=1
+        ]]>
+    </select>
+    
+    <update id="BbsDetailDAO.updateFile">
+		UPDATE
+			TCOM_ATCH_FILE
+		SET
+			FILE_NM = #file_nm#
+			,FILE_PATH = #file_path#
+			,ORG_FILE_NM = #org_file_nm#
+			,REG_DT = sysdate
+		WHERE
+			BBS_SEQ = #bbs_seq#
+	</update>
+	
+	<delete id="BbsDetailDAO.deleteFile">
+		delete
+			from
+				TCOM_ATCH_FILE
+		where
+			BBS_SEQ =#bbs_seq#
+	</delete>
+	
+	<select id="BbsDetailDAO.fileDown" resultMap="FileDownMap">
+	SELECT 
+		bbs_seq
+		,atch_seq
+		,file_path
+		,file_nm
+		,org_file_nm
+		,reg_dt 
+	FROM 
+		TCOM_ATCH_FILE 
+	where 
+		bbs_seq = #bbs_seq#
+	</select>
+	
+	<select id ="BbsDetailDAO.seqFind" resultClass="java.lang.Integer">
+		SELECT
+			BBS_SEQ
+		FROM
+			TCOM_BBS
+		WHERE
+			ROWNUM=1
+		ORDER BY BBS_SEQ DESC
+	</select>
+	
+	<update id="BbsDetailDAO.increaseViewCount">
+		UPDATE 
+			TCOM_BBS
+		SET
+			VIEW_COUNT=VIEW_COUNT+1
+		WHERE
+			BBS_SEQ=#bbs_seq#
+	</update>
+	
+	<select id="BbsDetailDAO.selectPrevNo" resultClass="java.lang.Integer">
+	    SELECT PREBNO FROM(
+			SELECT 
+			    BBS_SEQ,
+			    LAG(BBS_SEQ,1,-1) OVER(ORDER BY BBS_SEQ ASC) AS PREBNO,
+			    LEAD(BBS_SEQ,1,-1) OVER(ORDER BY BBS_SEQ ASC) AS NEXTBNO 
+			FROM TCOM_BBS
+			) temp
+			WHERE temp.BBS_SEQ = #bbs_seq#
+	</select>
+	
+	<select id="BbsDetailDAO.selectNextNo" resultClass="java.lang.Integer">
+	    SELECT NEXTBNO FROM(
+			SELECT 
+			    BBS_SEQ,
+			    LAG(BBS_SEQ,1,-1) OVER(ORDER BY BBS_SEQ ASC) AS PREBNO,
+			    LEAD(BBS_SEQ,1,-1) OVER(ORDER BY BBS_SEQ ASC) AS NEXTBNO 
+			FROM TCOM_BBS
+			) temp
+			WHERE temp.BBS_SEQ = #bbs_seq#
+	</select>
+</sqlMap>
