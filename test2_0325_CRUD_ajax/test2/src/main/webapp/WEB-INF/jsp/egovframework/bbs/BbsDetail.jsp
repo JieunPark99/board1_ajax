@@ -57,7 +57,6 @@
                    	document.detailForm.submit(); */
                    	var paramData = $("#detailForm")[0];
                    	paramData = new FormData(paramData);
-                   	/*왜 이렇게 하는건지 알아야 함.*/
                    	
                    	$.ajax({
                    		type:"POST",
